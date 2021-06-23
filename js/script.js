@@ -8,3 +8,5 @@ let gitUserInfo = async function() {
 }
 
 gitUserInfo();
+
+let gaming;
