@@ -3,10 +3,12 @@ let username = "Rayne-Shadow-Legends";
 
 let repoList = document.querySelector(".repo-list");
 
+let reposClass = document.querySelector(".repos");
+let repoData = document.querySelector(".repo-data");
+
 let gitUserInfo = async function() {
     let userInfoRequest = await fetch(`https://api.github.com/users/${username}`);
     userInfo = await userInfoRequest.json();
-    console.log(userInfo);
     displayUserInfo(userInfo);
 };
 
@@ -33,17 +35,54 @@ let gitUserInfo = async function() {
 let getRepos = async function() {
   let repoRequest = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
   let repos = await repoRequest.json();
-  console.log(repos);
-  displayRepoInfo(repos);
+  displayRepos(repos);
 };
 
-let displayRepoInfo = function(repos) {
+let displayRepos = function(repos) {
   for(let repo of repos) {
     let li = document.createElement("li");
-    li.classList.add("repo")
+    li.classList.add("repo");
     li.innerHTML = `<h3>${repo.name}</h3>`;
     repoList.append(li);
   }
 };
 
 getRepos();
+
+repoList.addEventListener("click", function(e){
+  if (e.target.matches("h3")){
+    let repoName = e.target.innerText;
+    getRepoInfo(repoName);
+  };
+});
+
+let getRepoInfo = async function(repoName){
+  let repoInfoRequest = await fetch(`https://api.github.com/repos/${username}/${repoName}`);
+  let repoInfo = await repoInfoRequest.json();
+  console.log(repoInfo);
+
+  let fetchLanguages =  await fetch(repoInfo.languages_url);
+  let languageData = await fetchLanguages.json();
+
+  for(let language in languageData) {
+    let languages = [];
+    languages.push(language);
+
+    displayRepoInfo(repoInfo, languages);
+  };
+};
+
+let displayRepoInfo = async function(repoInfo, languages) {
+  repoData.innerHTML = "";
+  let div = document.createElement("div");
+  div.innerHTML = `
+    <h3>Name: ${repoInfo.name}</h3>
+      <p>Description: ${repoInfo.description}</p>
+      <p>Default Branch: ${repoInfo.default_branch}</p>
+      <p>Languages: ${languages.join(", ")}</p>
+      <a class="visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>`;
+
+      repoData.append(div);
+      repoData.classList.remove("hide");
+      reposClass.classList.add("hide")
+  };
